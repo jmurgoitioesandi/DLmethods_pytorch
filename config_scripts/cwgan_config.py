@@ -10,23 +10,31 @@ def cla():
 
     # Data parameters
     parser.add_argument(
-        "--train_file",
+        "--dataset_directory",
         type=str,
-        default="ONH_samples_2500_20000/training_data.h5",
+        default="/scratch1/murgoiti/Datasets/Runze_Phantoms_dataset_for_PyTorch_1em7noise",
         help=textwrap.dedent("""Data file containing training data pairs"""),
     )
     parser.add_argument(
         "--saving_dir",
         type=str,
-        default="cWGAN_092323",
+        default="cWGAN_Runze_Phantoms_110223",
         help=textwrap.dedent("""Directory to save files"""),
     )
     parser.add_argument(
         "--n_train",
         type=int,
-        default=12000,
+        default=3000,
         help=textwrap.dedent(
             """Number of training samples to use. Cannot be more than that available."""
+        ),
+    )
+    parser.add_argument(
+        "--n_val",
+        type=int,
+        default=1000,
+        help=textwrap.dedent(
+            """Number of validation samples to use. Cannot be more than that available."""
         ),
     )
     parser.add_argument(
@@ -44,7 +52,13 @@ def cla():
     parser.add_argument(
         "--batch_size",
         type=int,
-        default=50,
+        default=100,
         help=textwrap.dedent("""Batch size"""),
+    )
+    parser.add_argument(
+        "--z_dim",
+        type=int,
+        default=10,
+        help=textwrap.dedent("""Dimension of latent vector"""),
     )
     return parser.parse_args()

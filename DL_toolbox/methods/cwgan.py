@@ -3,13 +3,14 @@ import pickle
 import numpy as np
 import matplotlib.pyplot as plt
 import importlib
-import torch.optim.Adam as Adam
+from torch.optim import Adam
 from torch import (
     add,
     cat,
     rsqrt,
     rand,
     randn,
+    range,
     autograd,
     ones_like,
     norm,
@@ -17,12 +18,14 @@ from torch import (
     square,
     sqrt,
     sum,
+    abs,
     Tensor,
     empty,
     einsum,
     mean,
     save,
     load,
+    no_grad,
 )
 import torch.nn as nn
 import torch.nn.functional as F
@@ -41,8 +44,9 @@ class Conditional_WGAN:
         n_critic=4,
         gp_coef=10,
         z_dim=50,
+        z_shape=[50, 1, 1],
         device=None,
-        save_freq=50,
+        save_freq=500,
         directory="",
         learn_rate=1e-3,
         new=True,
@@ -51,6 +55,7 @@ class Conditional_WGAN:
         self.n_critic = n_critic
         self.gp_coef = gp_coef
         self.z_dim = z_dim
+        self.z_shape = z_shape
         self.generator = None
         self.critic = None
         self.g_optim = None
@@ -65,6 +70,11 @@ class Conditional_WGAN:
         self.last_c_dir = ""
         self.last_g_optim_dir = ""
         self.last_c_optim_dir = ""
+        if not os.path.exists(self.dir):
+            os.makedirs(self.dir)
+        else:
+            print("\n     *** Folder already exists!\n")
+
         if new:
             self.save_parameters()
         else:
@@ -93,6 +103,8 @@ class Conditional_WGAN:
     def load_models_init(self, generator, critic, g_optim, c_optim):
         self.generator = generator
         self.critic = critic
+        self.generator.to(self.device)
+        self.critic.to(self.device)
         self.g_optim = g_optim
         self.c_optim = c_optim
 
@@ -140,7 +152,7 @@ class Conditional_WGAN:
     def gradient_penalty(self, fake_X, true_X, true_Y, p=2, c0=1.0):
         """Evaluates full gradient penalty term"""
         batch_size, *other_dims = true_X.size()
-        epsilon = rand([batch_size] + [1 for _ in range(len(other_dims))])
+        epsilon = rand([batch_size] + [1 for _ in range(0, len(other_dims) - 1)])
         epsilon = epsilon.expand(-1, *other_dims).to(self.device)
         x_hat = epsilon * true_X + (1 - epsilon) * fake_X
         x_hat.requires_grad = True
@@ -162,20 +174,39 @@ class Conditional_WGAN:
         grad_penalty = pow(grad_norm - c0, p).mean()
         return grad_penalty
 
-    def train_step_generator(self, true_Y):
+    def train_step_generator(self, true_X, true_Y):
         self.g_optim.zero_grad()
-        z = randn((self.batch_size, self.z_dim, 1, 1))
+        z = randn([self.batch_size] + self.z_shape)
         z = z.to(self.device)
         fake_X = self.generator(true_Y, z)
         fake_val = self.critic(fake_X, true_Y)
         g_loss = -mean(fake_val)
         g_loss.backward()
         self.g_optim.step()
-        return g_loss.item()
+        missmatch = np.mean(
+            np.sum(
+                abs(true_X - fake_X).cpu().detach().numpy(),
+                axis=(1,2,3),
+            )
+        )
+        return g_loss.item(), missmatch.item()
+
+    def eval_generator(self, true_X, true_Y):
+        self.g_optim.zero_grad()
+        z = randn([self.batch_size] + self.z_shape)
+        z = z.to(self.device)
+        fake_X = self.generator(true_Y, z)
+        missmatch = np.mean(
+            np.sum(
+                abs(true_X - fake_X).cpu().detach().numpy(),
+                axis=(1,2,3),
+            )
+        )
+        return missmatch.item()
 
     def train_step_critic(self, true_X, true_Y):
         self.c_optim.zero_grad()
-        z = randn((self.batch_size, self.z_dim, 1, 1))
+        z = randn([self.batch_size] + self.z_shape)
         z = z.to(self.device)
         fake_X = self.generator(true_Y, z).detach()
         fake_val = self.critic(fake_X, true_Y)
@@ -189,29 +220,35 @@ class Conditional_WGAN:
         self.c_optim.step()
         return c_loss.item(), wd_loss.item()
 
-    def wgan_saver_while_training(self, log_dict, epoch):
-        np.savetxt(f"{self.dir}/{self.runs+1}/g_loss.txt", log_dict["g_loss"])
-        np.savetxt(f"{self.dir}/{self.runs+1}/c_loss.txt", log_dict["c_loss"])
-        np.savetxt(f"{self.dir}/{self.runs+1}/wd.txt", log_dict["wd_loss"])
+    def cwgan_saver_while_training(self, log_dict, epoch):
+        for key in log_dict.keys():
+            np.savetxt(f"{self.dir}/{self.runs+1}/{key}.txt", log_dict[key])
 
-        save(self.generator, f"{self.dir}/{self.runs}/generator_epoch={epoch}")
-        save(self.critic, f"{self.dir}/{self.runs}/critic_epoch={epoch}")
-        save(self.g_optim.state_dict(), f"{self.dir}/{self.runs}/g_optim_epoch={epoch}")
-        save(self.c_optim.state_dict(), f"{self.dir}/{self.runs}/c_optim_epoch={epoch}")
+        save(self.generator, f"{self.dir}/{self.runs+1}/generator_epoch={epoch}")
+        save(self.critic, f"{self.dir}/{self.runs+1}/critic_epoch={epoch}")
+        save(
+            self.g_optim.state_dict(), f"{self.dir}/{self.runs+1}/g_optim_epoch={epoch}"
+        )
+        save(
+            self.c_optim.state_dict(), f"{self.dir}/{self.runs+1}/c_optim_epoch={epoch}"
+        )
 
-        self.last_g_dir = f"{self.dir}/{self.runs}/generator_epoch={epoch}"
-        self.last_c_dir = f"{self.dir}/{self.runs}/critic_epoch={epoch}"
-        self.last_g_optim_dir = f"{self.dir}/{self.runs}/g_optim_epoch={epoch}"
-        self.last_c_optim_dir = f"{self.dir}/{self.runs}/c_optim_epoch={epoch}"
+        self.last_g_dir = f"{self.dir}/{self.runs+1}/generator_epoch={epoch}"
+        self.last_c_dir = f"{self.dir}/{self.runs+1}/critic_epoch={epoch}"
+        self.last_g_optim_dir = f"{self.dir}/{self.runs+1}/g_optim_epoch={epoch}"
+        self.last_c_optim_dir = f"{self.dir}/{self.runs+1}/c_optim_epoch={epoch}"
 
     def train(
         self,
         train_data,
+        val_data,
         n_epoch,
         verbose=True,
         verbose_freq=100,
+        eval_freq=25,
         sample_plotter=None,
-        n_samp_plot=16,
+        n_samp_plot=4,
+        n_stat=20,
     ):
         if os.path.exists(self.dir + f"/{self.runs+1}"):
             print("\n     *** Folder already exists!\n")
@@ -220,6 +257,8 @@ class Conditional_WGAN:
         c_loss_log = []
         g_loss_log = []
         wd_loss_log = []
+        missmatch_train_log = []
+        missmatch_val_log = []
         n_iters = 1
         for i in range(1, n_epoch + 1):
             for true_X, true_Y in train_data:
@@ -232,31 +271,53 @@ class Conditional_WGAN:
                 wd_loss_log.append(wd_loss)
 
                 if n_iters % self.n_critic == 0:
-                    g_loss = self.train_step_generator(true_Y)
+                    g_loss, missmatch = self.train_step_generator(true_X, true_Y)
                     g_loss_log.append(g_loss)
+                    missmatch_train_log.append(missmatch)
 
                 n_iters += 1
 
                 if verbose and n_iters % verbose_freq == 0:
                     print(
                         f"***** n iters: {n_iters};",
-                        " c_loss: {c_loss}; g_loss: {g_loss}",
+                        f" c_loss: {c_loss}; g_loss: {g_loss}",
                     )
+            if i == 1 or i % eval_freq == 0:
+                with no_grad():
+                    for true_X, true_Y in val_data:
+                        true_X = true_X.to(self.device)
+                        true_Y = true_Y.to(self.device)
+                        missmatch = self.eval_generator(true_X, true_Y)
+                        missmatch_val_log.append(missmatch)
 
-            if i % self.save_freq:
+            if i % self.save_freq == 0 or i == 1:
                 log_dict = dict()
                 log_dict["g_loss"] = g_loss_log
                 log_dict["c_loss"] = c_loss_log
                 log_dict["wd_loss"] = wd_loss_log
-                self.wgan_saver_while_training(log_dict)
+                log_dict["missmatch_train"] = missmatch_train_log
+                log_dict["missmatch_val"] = missmatch_val_log
+                self.cwgan_saver_while_training(log_dict, i)
                 self.save_parameters()
                 if sample_plotter:
-                    z = randn((n_samp_plot, self.z_dim, 1, 1))
-                    z = z.to(self.device)
-                    fake = self.generator(z).detach()
-                    sample_plotter(
-                        fake, f"{self.dir}/{self.runs}/generated_samples_epoch={i}"
-                    )
+                    with no_grad():
+                        z = randn([n_samp_plot*n_stat] + self.z_shape)
+                        z = z.to(self.device)
+                        fake = (
+                            self.generator(
+                                true_Y[:n_samp_plot].repeat_interleave(n_stat, dim=0), z
+                            )
+                            .cpu()
+                            .detach()
+                            .numpy()
+                        )
+                        sample_plotter(
+                            fake,
+                            true_Y.cpu().detach().numpy(),
+                            true_X.cpu().detach().numpy(),
+                            n_stat,
+                            f"{self.dir}/{self.runs+1}/generated_samples_epoch={int(i)}",
+                        )
 
         self.runs += 1
         self.epochs_trained += n_epoch
