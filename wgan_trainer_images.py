@@ -4,12 +4,12 @@ import torch
 from torchsummary import summary
 from torch.utils.data import DataLoader
 from torch.optim import Adam
-from DL_toolbox.models.wgan import generator_dense_1x64x64
-from DL_toolbox.models.wgan import critic_dense_1x64x64
+from DL_toolbox.models.wgan import generator_dense
+from DL_toolbox.models.wgan import critic_dense
 from DL_toolbox.methods.wgan import WGAN
 from DL_toolbox.utils.data_utils import LoadImageDataset
 from DL_toolbox.utils.plotting_functions import plotting_image_grid
-from wgan_config import cla
+from config_scripts.wgan_config import cla
 
 
 def main():
@@ -25,18 +25,18 @@ def main():
     np.random.seed(PARAMS.seed_no)
     torch.manual_seed(PARAMS.seed_no)
 
-    train_data = LoadImageDataset(
-        datafile=PARAMS.train_file, N=PARAMS.n_train, permute=True, x_C=1
-    )
+    # train_data = LoadImageDataset(
+    #     datafile=PARAMS.train_file, N=PARAMS.n_train, permute=True, x_C=1
+    # )
 
-    loader = DataLoader(
-        train_data, batch_size=PARAMS.batch_size, shuffle=True, drop_last=True
-    )
+    # loader = DataLoader(
+    #     train_data, batch_size=PARAMS.batch_size, shuffle=True, drop_last=True
+    # )
 
     # Creating the models
 
-    generator_model = generator_dense_1x64x64(z_dim=50)
-    critic_model = critic_dense_1x64x64()
+    generator_model = generator_dense(z_dim=50)
+    critic_model = critic_dense()
     generator_model.to(device)
     critic_model.to(device)
 

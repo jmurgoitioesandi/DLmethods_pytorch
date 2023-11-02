@@ -186,7 +186,7 @@ class Conditional_WGAN:
         missmatch = np.mean(
             np.sum(
                 abs(true_X - fake_X).cpu().detach().numpy(),
-                axis=(1,2,3),
+                axis=(1, 2, 3),
             )
         )
         return g_loss.item(), missmatch.item()
@@ -199,7 +199,7 @@ class Conditional_WGAN:
         missmatch = np.mean(
             np.sum(
                 abs(true_X - fake_X).cpu().detach().numpy(),
-                axis=(1,2,3),
+                axis=(1, 2, 3),
             )
         )
         return missmatch.item()
@@ -301,7 +301,7 @@ class Conditional_WGAN:
                 self.save_parameters()
                 if sample_plotter:
                     with no_grad():
-                        z = randn([n_samp_plot*n_stat] + self.z_shape)
+                        z = randn([n_samp_plot * n_stat] + self.z_shape)
                         z = z.to(self.device)
                         fake = (
                             self.generator(
