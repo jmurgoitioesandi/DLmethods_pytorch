@@ -152,7 +152,7 @@ class Conditional_WGAN:
     def gradient_penalty(self, fake_X, true_X, true_Y, p=2, c0=1.0):
         """Evaluates full gradient penalty term"""
         batch_size, *other_dims = true_X.size()
-        epsilon = rand([batch_size] + [1 for _ in range(0, len(other_dims) - 1)])
+        epsilon = rand([batch_size] + [1 for _ in range(0, len(other_dims))])
         epsilon = epsilon.expand(-1, *other_dims).to(self.device)
         x_hat = epsilon * true_X + (1 - epsilon) * fake_X
         x_hat.requires_grad = True
