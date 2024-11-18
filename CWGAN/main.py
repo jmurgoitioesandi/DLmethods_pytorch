@@ -1,17 +1,15 @@
 import numpy as np
-import matplotlib.pyplot as plt
 import torch
 from torchsummary import summary
 from torch.utils.data import DataLoader
 from torch.optim import Adam
-from DL_toolbox.models.cwgan import generator_encdec_dense_2D
-from DL_toolbox.models.cwgan import critic_dense_2D
-from DL_toolbox.methods.cwgan import Conditional_WGAN
-from DL_toolbox.utils.data_utils import LoadImageDataset_JME
-from DL_toolbox.utils.plotting_functions import (
+from model import generator_encdec_dense_2D, critic_dense_2D
+from cwgan import Conditional_WGAN
+from utils.data_utils import LoadImageDataset_JME
+from utils.plotting_functions import (
     plotting_image_grid_cwgan_true_vs_generated,
 )
-from config_scripts.cwgan_config import cla
+from config import cla
 
 
 def main():

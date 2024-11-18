@@ -1,5 +1,5 @@
 import torch.nn as nn
-from DL_toolbox.models.architecture_blocks import (
+from architecture_blocks import (
     UpSample2D,
     UpSample3D,
     DownSample2D,
@@ -192,6 +192,7 @@ class generator_UNET_dense_2D(nn.Module):
 
         return output
 
+
 class generator_encdec_dense_2D(nn.Module):
     """Generator model: U-Net with skip connections and Denseblocks
     input_x is assumed to have the shape (N, C, H, W)
@@ -289,9 +290,7 @@ class generator_encdec_dense_2D(nn.Module):
             layers=denselayers,
         )
 
-        self.u3 = UpSample2D(
-            x_dim=k, filters=k // 2, act_param=act_param
-        )
+        self.u3 = UpSample2D(x_dim=k, filters=k // 2, act_param=act_param)
         H, W, k = 2 * H, 2 * W, k // 2
         self.u4 = DenseBlock2D(
             x_shape=(k, H, W),
@@ -302,9 +301,7 @@ class generator_encdec_dense_2D(nn.Module):
             layers=denselayers,
         )
 
-        self.u5 = UpSample2D(
-            x_dim=k, filters=k // 2, act_param=act_param
-        )
+        self.u5 = UpSample2D(x_dim=k, filters=k // 2, act_param=act_param)
 
         H, W, k = 2 * H, 2 * W, k // 2
         self.u6 = DenseBlock2D(
@@ -369,7 +366,6 @@ class generator_encdec_dense_2D(nn.Module):
         output = x10
 
         return output
-
 
 
 class generator_UNET_dense_3D_to_2D(nn.Module):
@@ -568,6 +564,7 @@ class generator_UNET_dense_3D_to_2D(nn.Module):
 
         return output
 
+
 class critic_dense_separate_2D(nn.Module):
     """Critic model using Denseblocks
     input_x and input_y are both assumed to have
@@ -575,9 +572,20 @@ class critic_dense_separate_2D(nn.Module):
     """
 
     def __init__(
-        self, x_shape, y_shape, k0_x=24, k0_y=24, act_param=0.1, 
-        denselayers_x=3, denselayers_y=3, dense_int_out_x=16, dense_int_out_y=16,
-        ds_k_x=4, ds_s_x=4, ds_k_y=4, ds_s_y=4,
+        self,
+        x_shape,
+        y_shape,
+        k0_x=24,
+        k0_y=24,
+        act_param=0.1,
+        denselayers_x=3,
+        denselayers_y=3,
+        dense_int_out_x=16,
+        dense_int_out_y=16,
+        ds_k_x=4,
+        ds_s_x=4,
+        ds_k_y=4,
+        ds_s_y=4,
     ):
         """
         x_shape does not include the number of samples N.
@@ -612,7 +620,11 @@ class critic_dense_separate_2D(nn.Module):
         )
 
         self.xcnn5 = DownSample2D(
-            x_dim=2 * k0_x, filters=4 * k0_x, act_param=act_param, ds_k=ds_k_x, ds_s=ds_s_x
+            x_dim=2 * k0_x,
+            filters=4 * k0_x,
+            act_param=act_param,
+            ds_k=ds_k_x,
+            ds_s=ds_s_x,
         )
         H, W = (H - 2) // 2 + 1, (W - 2) // 2 + 1
 
@@ -661,7 +673,11 @@ class critic_dense_separate_2D(nn.Module):
         )
 
         self.ycnn5 = DownSample2D(
-            x_dim=2 * k0_y, filters=4 * k0_y, act_param=act_param, ds_k=ds_k_y, ds_s=ds_s_y
+            x_dim=2 * k0_y,
+            filters=4 * k0_y,
+            act_param=act_param,
+            ds_k=ds_k_y,
+            ds_s=ds_s_y,
         )
         H, W = (H - 2) // 2 + 1, (W - 2) // 2 + 1
 
@@ -685,7 +701,9 @@ class critic_dense_separate_2D(nn.Module):
         Hy, Wy = H, W
         # ----- Dense layers------------------------------
         self.flat = nn.Flatten()
-        self.lin1 = nn.Linear(in_features=8 * k0_y * Hy * Wy + 8 * k0_x * Hx * Wx, out_features=128)
+        self.lin1 = nn.Linear(
+            in_features=8 * k0_y * Hy * Wy + 8 * k0_x * Hx * Wx, out_features=128
+        )
         self.LReLU = nn.ELU(alpha=act_param)
         self.LN = ApplyNormalization2D(x_shape=(128), normalization="ln")
         self.lin2 = nn.Linear(in_features=128, out_features=128)
@@ -716,7 +734,7 @@ class critic_dense_separate_2D(nn.Module):
         x = self.flat(x)
         y = self.flat(y)
         xy = cat((x, y), dim=1)
-        
+
         xy = self.lin1(xy)
         xy = self.LReLU(xy)
         xy = self.LN(xy)
@@ -729,6 +747,7 @@ class critic_dense_separate_2D(nn.Module):
         output = self.lin3(xy)
 
         return output
+
 
 class critic_dense_2D(nn.Module):
     """Critic model using Denseblocks
@@ -827,7 +846,6 @@ class critic_dense_2D(nn.Module):
         output = self.lin3(x)
 
         return output
-
 
 
 class critic_dense_3D_and_2D(nn.Module):

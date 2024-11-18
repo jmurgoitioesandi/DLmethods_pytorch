@@ -4,12 +4,11 @@ import torch
 from torchsummary import summary
 from torch.utils.data import DataLoader
 from torch.optim import Adam
-from DL_toolbox.models.wgan import generator_dense
-from DL_toolbox.models.wgan import critic_dense
-from DL_toolbox.methods.wgan import WGAN
-from DL_toolbox.utils.data_utils import LoadImageDataset
-from DL_toolbox.utils.plotting_functions import plotting_image_grid
-from config_scripts.wgan_config import cla
+from model import generator_dense, critic_dense
+from wgan import WGAN
+from utils.data_utils import LoadImageDataset
+from utils.plotting_functions import plotting_image_grid
+from config import cla
 
 
 def main():
