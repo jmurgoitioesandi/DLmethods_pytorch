@@ -24,13 +24,13 @@ def main():
     np.random.seed(PARAMS.seed_no)
     torch.manual_seed(PARAMS.seed_no)
 
-    # train_data = LoadImageDataset(
-    #     datafile=PARAMS.train_file, N=PARAMS.n_train, permute=True, x_C=1
-    # )
+    train_data = LoadImageDataset(
+        datafile=PARAMS.train_file, N=PARAMS.n_train, permute=True, x_C=1
+    )
 
-    # loader = DataLoader(
-    #     train_data, batch_size=PARAMS.batch_size, shuffle=True, drop_last=True
-    # )
+    loader = DataLoader(
+        train_data, batch_size=PARAMS.batch_size, shuffle=True, drop_last=True
+    )
 
     # Creating the models
 
