@@ -48,6 +48,7 @@ def main():
     x_shape = (1, 64, 64)
     y_shape = (12, 64, 64)
     z_shape = (10, 1, 1)
+
     generator_model = generator_encdec_dense_2D(
         y_shape,
         out_channels=1,
