@@ -88,17 +88,17 @@ def parse_args_and_config():
         config = yaml.safe_load(f)
     new_config = dict2namespace(config)
 
-    config.data.x_type = args.xtype
-    config.data.dataset = args.problem
+    new_config.data.x_type = args.xtype
+    new_config.data.dataset = args.problem
 
     args.doc = (
         args.doc
         + "_"
         + args.problem
         + "_"
-        + config.diff_method.type
+        + new_config.diff_method.type
         + "_"
-        + config.data.x_type
+        + new_config.data.x_type
         + "_noiselvl"
         + int(100 * args.noiselvl)
     )
