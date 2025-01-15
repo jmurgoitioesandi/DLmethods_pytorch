@@ -1,0 +1,53 @@
+!!python/object:argparse.Namespace
+data: !!python/object:argparse.Namespace
+  channels: 1
+  control_id: 0
+  dataset: phantoms
+  gaussian_dequantization: false
+  image_size: 64
+  logit_transform: false
+  meas_channels: 12
+  num_workers: 8
+  random_flip: false
+  rescaled: false
+  uniform_dequantization: false
+model: !!python/object:argparse.Namespace
+  ema: true
+  ema_rate: 0.999
+  ngf: 64
+  nonlinearity: elu
+  normalization: InstanceNorm++
+  num_classes: 256
+  sigma_begin: 50
+  sigma_dist: geometric
+  sigma_end: 0.01
+  spec_norm: false
+optim: !!python/object:argparse.Namespace
+  amsgrad: false
+  beta1: 0.9
+  eps: 1.0e-08
+  lr: 0.0001
+  optimizer: Adam
+  weight_decay: 0.0
+sampling: !!python/object:argparse.Namespace
+  batch_size: 100
+  ckpt_id: 8000
+  control_id: 0
+  data_init: false
+  denoise: true
+  final_only: true
+  n_steps_each: 5
+  sample_size: 3000
+  step_lr: 5.7e-06
+test: !!python/object:argparse.Namespace
+  batch_size: 100
+  begin_ckpt: 10000
+  end_ckpt: 300000
+training: !!python/object:argparse.Namespace
+  anneal_power: 2
+  batch_size: 128
+  log_all_sigmas: false
+  n_epochs: 500000
+  n_iters: 300001
+  snapshot_freq: 2000
+  snapshot_sampling: true

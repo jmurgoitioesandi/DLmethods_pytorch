@@ -1,0 +1,11 @@
+INFO - main.py - 2024-03-12 08:43:32,953 - Using device: cpu
+INFO - main.py - 2024-03-12 08:43:32,956 - Writing log file to exps/logs/031224
+INFO - main.py - 2024-03-12 08:43:32,956 - Exp instance id = 42563
+INFO - main.py - 2024-03-12 08:43:32,956 - Exp comment = 
+INFO - main.py - 2024-03-12 08:43:32,956 - Config = phantoms.yml
+INFO - ncsn_runner.py - 2024-03-12 08:44:13,116 - step: 1, loss: 3268.967529296875
+INFO - ncsn_runner.py - 2024-03-12 08:45:20,672 - step: 2, loss: 7650.3876953125
+INFO - ncsn_runner.py - 2024-03-12 08:46:26,662 - step: 3, loss: 3639.0546875
+INFO - ncsn_runner.py - 2024-03-12 08:47:33,895 - step: 4, loss: 2186.714599609375
+INFO - ncsn_runner.py - 2024-03-12 08:48:39,935 - step: 5, loss: 2424.56982421875
+INFO - ncsn_runner.py - 2024-03-12 08:49:46,205 - step: 6, loss: 2465.58837890625

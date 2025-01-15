@@ -1,0 +1,7 @@
+- The model at the moment takes x and y concatenated along the channel axis:
+    - The model needs to be modified to take x and y separately, x as a vector.
+    - (Training) X and y are concatenated in the "anneal_dsm_score_estimation" function during training. This function needs to be changed
+    to input the x and y separately into the model. DO THIS WITHIN THE MODEL.
+    - (Sampling) Same as above but for the "anneal_Langevin_dynamics" function. DO THIS WITHIN THE MODEL.
+
+- Check how the loggers work as well as the tensorflow savers.
