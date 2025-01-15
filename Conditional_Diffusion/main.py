@@ -75,7 +75,7 @@ def parse_args_and_config():
     )
     parser.add_argument(
         "--noiselvl",
-        type=str,
+        type=float,
         required=True,
         help="Standard deviation of noise",
     )
@@ -100,7 +100,7 @@ def parse_args_and_config():
         + "_"
         + new_config.data.x_type
         + "_noiselvl"
-        + int(100 * args.noiselvl)
+        + str(int(100 * args.noiselvl))
     )
     args.log_path = os.path.join(args.exp, "logs", args.doc)
 

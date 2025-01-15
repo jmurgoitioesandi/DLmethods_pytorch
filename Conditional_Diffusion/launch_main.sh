@@ -9,8 +9,8 @@
 #SBATCH --account=aoberai_286   # Account to charge resources to
 
 module purge
-module load gcc/11.3.0
-module load cuda/11.8.0
+module load gcc/13.3.0
+module load cuda/12.6.3
 eval "$(conda shell.bash hook)"
 conda activate pytorch_env
 
@@ -18,4 +18,5 @@ python main.py --config=phantoms.yml \
                 --doc=011525 \
                 --problem=HeatEqSingleSource \
                 --xtype=vector \
-                --noiselvl=0.1
+                --noiselvl=0.1 \
+                --ni
